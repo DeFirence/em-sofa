@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module Sofa::TVRage
+module EventMachine::Sofa::TVRage
 
 describe Season do
   describe "with 1 episode" do

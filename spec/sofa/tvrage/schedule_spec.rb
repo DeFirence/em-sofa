@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module Sofa::TVRage
+module EventMachine::Sofa::TVRage
 
 describe Schedule do
   before do

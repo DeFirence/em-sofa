@@ -3,20 +3,19 @@ require 'rake'
 
 begin
   require 'jeweler'
-  require 'lib/sofa/version'
+  require 'lib/em-sofa/version'
   Jeweler::Tasks.new do |gem|
-    gem.name = "sofa"
-    gem.version = Sofa::Version::STRING
-    gem.summary = %Q{A Ruby library for the TVRage API.}
-    gem.description = %Q{A simple Ruby library for the TVRage API.}
-    gem.email = "henry@qlane.com"
-    gem.homepage = "http://github.com/hsume2/sofa"
-    gem.authors = ["Henry Hsu"]
-    gem.add_dependency "httparty"
-    gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.add_development_dependency "mocha"
+    gem.name = "em-sofa"
+    gem.version = EventMachine::Sofa::Version::STRING
+    gem.summary = %Q{An EventMachine based Ruby library for the TVRage API.}
+    gem.description = %Q{A simple EventMachine based Ruby library for the TVRage API.}
+    gem.email = "defirence@defirence.za.net"
+    gem.homepage = "http://github.com/DeFirence/em-sofa"
+    gem.authors = ["DeFirence", "Henry Hsu"]
+    gem.add_dependency "em-http-request"
+    gem.add_dependency "crack"
     gem.add_development_dependency "fakeweb"
-    gem.add_development_dependency "yard", ">= 0"
+    gem.add_development_dependency "mocha"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new

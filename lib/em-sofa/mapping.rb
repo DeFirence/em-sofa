@@ -1,4 +1,4 @@
-module Sofa
+module EM::Sofa
   module Mapping
     # This method is automatically called when {Mapping} is included in a module.
     # It automatically adds {InstanceMethods}, {ClassMethods}
@@ -16,12 +16,12 @@ module Sofa
       # Returns hash of all the attributes, with attribute names as keys and attribute values as values.
       #
       # @return [Hash<Symbol, Object>] Hash of all attributes
-      # @see Sofa::Mapping::ClassMethods#maps
+      # @see EM:Sofa::Mapping::ClassMethods#maps
       def attributes
         klass = self.class
         klass.mappings.values.inject({}) do |attrs, to|
           next unless to
-          attrs[to] = send(to)
+          attrs[to] = [:season_list, :episode_list].include?(to) ? method(to) : send(to)
           attrs
         end
       end
@@ -29,7 +29,7 @@ module Sofa
       # Updates all the attributes from the Hash.
       #
       # @param attributes [Hash<Symbol, Object>] A hash with attribute names as keys and attribute values as values
-      # @see Sofa::Mapping::ClassMethods#maps
+      # @see EM:Sofa::Mapping::ClassMethods#maps
       def update_with_mapping(attributes = {})
         attributes.each do |key, value|
           next unless (klass = self.class) and key.respond_to?(:to_sym) and to = klass.mappings[key.to_sym]
@@ -62,7 +62,7 @@ module Sofa
       # 
       # @example Maps :examplename to :name and :link to itself.
       #   class Example1
-      #     include Sofa::Mapping
+      #     include EM:Sofa::Mapping
       #     maps(
       #       :examplename => :name,
       #       :link        => nil
@@ -74,7 +74,7 @@ module Sofa
       #   example1.attributes # => {:name => "1", :link => "http://google.com"}
       # @example Maps :airdate to :air_date and stores the block.
       #   class Example2
-      #     include Sofa::Mapping
+      #     include EM:Sofa::Mapping
       #
       #     maps(:airdate => :air_date) do |value|
       #       Date.parse(value)
@@ -93,14 +93,14 @@ module Sofa
 
       # @private
       # @return [Hash<Symbol, Symbol>] Mapping of symbols to attribute names
-      def mappings #:nodoc:
+      def mappings
         @mappings
       end
 
       # @private
       # @return [Hash<Symbol, Proc>] Mapping of attribute names to a Proc filter.
       # @see #maps
-      def mappings_procs #:nodoc:
+      def mappings_procs
         @mappings_procs
       end
     end

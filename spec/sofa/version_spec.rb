@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module Sofa
+module EventMachine::Sofa
 
 describe Version do
   it "should get version" do

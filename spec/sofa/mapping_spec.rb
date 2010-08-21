@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "Mapped Object" do
   before do
     class MappedObject
-      include Sofa::Mapping
+      include EventMachine::Sofa::Mapping
 
       maps(:a => nil)
       maps(:B => :b)

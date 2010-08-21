@@ -1,7 +1,42 @@
 require 'spec_helper'
 
-module Sofa::TVRage
+module EventMachine::Sofa::TVRage
 
+  EM.describe EventMachine::Sofa::TVRage do
+    describe "greedy" do
+      before do
+        @id = "2930"
+        @show_xml = File.read("spec/fixtures/tvrage/show_info.xml")
+        FakeWeb.register_uri(:get, "http://services.tvrage.com/feeds/showinfo.php?sid=#{@id}", :body => @show_xml)
+        @xml = File.read("spec/fixtures/tvrage/full_show_info.xml")
+        FakeWeb.register_uri(:get, "http://services.tvrage.com/feeds/full_show_info.php?sid=#{@id}", :body => @xml)
+      end
+
+      should "use full show info" do
+        Show.full_info @id do |full_info|
+          full_info.should.be {}
+          done
+        end
+        #Show.new(@id, :greedy => true)
+      end
+
+      should "use full show info for season list" do
+        Show.new(@id) do |show|
+          #Show.expects(:episode_list).with(@id).never
+          Show.new(@id, :greedy => true) do |full_show|
+            full_show.season_list do |full_show_season_list|
+              show.season_list do |show_season_list|
+                full_show_season_list.should.be show_season_list
+                done
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
+=begin
 describe Show do
   before do
     @id = "2930"
@@ -152,11 +187,15 @@ describe Show do
     end
 
     it "should use full show info for season list" do
-      season_list = Show.new(@id).season_list
-      Show.expects(:episode_list).with(@id).never
-      Show.new(@id, :greedy => true).season_list.should == season_list
+      Show.new(@id) do |show|
+        Show.expects(:episode_list).with(@id).never
+        Show.new(@id, :greedy => true) do |full_show|
+          full_show.season_list.should == show.season_list
+        end
+      end
     end
   end
 end
 
 end
+=end
