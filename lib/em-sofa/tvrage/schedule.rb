@@ -8,20 +8,18 @@ module EventMachine
       class Schedule
         Base_Uri = 'services.tvrage.com/feeds'
 
+        extend TVRage
+
         class << self
           # Gets the full schedule for country
           #
           # @param country [String] The country to query in (US, UK, NL)
+          # @param &block [Block] Called back with result unless fibered
           # @return [Hash] The parsed XML of schedule information
           # @see http://services.tvrage.com/feeds/fullschedule.php?country=US US's Full Schedule
           def full(country, &block)
-            host = "http://#{Base_Uri}/fullschedule.php"
-            http = EM::HttpRequest.new(host).get :query => {:country => country}, :timeout => Timeout
-            http.callback {
-              xml = Crack::XML.parse(http.response)
-              block.call(xml["schedule"])
-            }
-            http
+            return Request.fibered(method(__method__), country) if defined? Fiber and Fiber.respond_to? :current and not block
+            Request.new(Base_Uri, '/fullschedule.php', block, :return_element => 'schedule', :country => country)
           end
         end
       end

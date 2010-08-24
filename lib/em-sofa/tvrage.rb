@@ -1,4 +1,4 @@
-require 'em-http-request'
+#require 'em-http-request'
 require 'crack'
 
 module EM::Sofa
@@ -7,5 +7,8 @@ module EM::Sofa
     autoload :Show, 'em-sofa/tvrage/show'
     autoload :Season, 'em-sofa/tvrage/season'
     autoload :Episode, 'em-sofa/tvrage/episode'
+
+    class HttpError < RuntimeError
+    end
   end
 end

@@ -1,96 +1,67 @@
 module EventMachine
   module Sofa
     module TVRage
-      class Request
-        include EM::Deferrable
-
-        def initialize(block)
-          callback {|info| block.call(info) }
-        end
-      end
       # This class holds the XML information of a single Show as per the TVRage API.
       # It's also the root point for communicating with the API.
       #
       # @see http://services.tvrage.com/index.php?page=public TVRage API
       class Show
         Base_Uri = 'services.tvrage.com'
-        Timeout  = 15
+
+        extend TVRage
 
         class << self
           # Gets the info for a Show.
           #
           # @param sid [String] The show's id
-          # @param &block [Block] Called back with the parsed XML when successful
-          # @return [EM:HttpRequest] HTTP request object
+          # @param &block [Block] Called back with the parsed XML when successful unless fibered
+          # @return [EM:TVRage::Request] TVRage request object or result hash if fibered
           # @see http://services.tvrage.com/feeds/showinfo.php?sid=15614 Chuck's Show Info
           def info(sid, &block)
+            return fibered_async(__method__, sid, options) if defined? Fiber and Fiber.respond_to? :current and not block
             raise ArgumentError, "No block given for completion callback" unless block
-            request = Request.new(block)
-            host = "http://#{Base_Uri}/feeds/showinfo.php"
-            http = EM::HttpRequest.new(host).get :query => {:sid => sid}, :timeout => Timeout
-            http.callback {
-              next request.fail :http_error unless xml = Crack::XML.parse(http.response) rescue nil
-              request.succeed xml["Showinfo"]
-            }
-            http.errback { request.fail http.error }
-            request
+            Request.new(Base_Uri, '/feeds/showinfo.php', block, :return_element => 'Showinfo', :sid => sid)
           end
 
           # Gets the full show info (info + season list + episode list) for a Show.
           #
           # @param sid [String] The show's id
-          # @param &block [Block] Called back with the parsed XML when successful else nil
+          # @param &block [Block] Called back with the parsed XML when successful unless fibered
+          # @return [EM:TVRage::Request] TVRage request object or result hash if fibered
           # @see http://services.tvrage.com/feeds/full_show_info.php?sid=15614 Chuck's Full Show Info
           def full_info(sid, &block)
+            return fibered_async(__method__, sid, options) if defined? Fiber and Fiber.respond_to? :current and not block
             raise ArgumentError, "No block given for completion callback" unless block
-            request = Request.new(block)
-            host = "http://#{Base_Uri}/feeds/full_show_info.php"
-            http = EM::HttpRequest.new(host).get :query => {:sid => sid}, :timeout => Timeout
-            http.callback {
-              next request.fail :http_error unless xml = Crack::XML.parse(http.response) rescue nil
-              request.succeed xml["Show"]
-            }
-            http.errback { request.fail http.error }
-            request
+            Request.new(Base_Uri, '/feeds/full_show_info.php', block, :return_element => 'Show', :sid => sid)
           end
 
           # Gets the episode list for a Show.
           #
           # @param sid [String] The show's id
-          # @param &block [Block] Called back with the parsed XML when successful else nil
+          # @param &block [Block] Called back with the parsed XML when successful unless fibered
+          # @return [EM:TVRage::Request] TVRage request object or result hash if fibered
           # @see http://services.tvrage.com/feeds/episode_list.php?sid=15614 Chuck's Episode List
           def episode_list(sid, &block)
+            return Request.fibered(method(__method__), sid) if defined? Fiber and Fiber.respond_to? :current and not block
             raise ArgumentError, "No block given for completion callback" unless block
-            request = Request.new(block)
-            host = "http://#{Base_Uri}/feeds/episode_list.php"
-            http = EM::HttpRequest.new(host).get :query => {:sid => sid}, :timeout => Timeout
-            http.callback {
-              next request.fail :http_error unless xml = Crack::XML.parse(http.response) rescue nil
-              request.succeed xml["Show"]
-            }
-            http.errback { request.fail http.error }
-            request
+            Request.new(Base_Uri, '/feeds/episode_list.php', block, :return_element => 'Show', :sid => sid)
           end
 
           # Finds the Show by name using TVRage's Quickinfo API.
           #
           # @param name [String] The name of the show to search for
           # @option options [Boolean] :greedy Whether or not to eager load the Season and Episode info
-          # @param &block [Block] Called back with the show with id parsed from the Quickinfo search
+          # @param &block [Block] Called back with the show with id parsed from the Quickinfo search unless fibered
+          # @return [EM:TVRage::Request] TVRage request object or result Show object if fibered
           # @see http://services.tvrage.com/index.php?page=public&go=quickinfo TVRage Quickinfo API
           # @see http://services.tvrage.com/tools/quickinfo.php?show=Chuck Chuck's Quickinfo
           def by_name(name, options = {}, &block)
+            return Request.fibered(method(__method__), name, options) if defined? Fiber and Fiber.respond_to? :current and not block
             raise ArgumentError, "No block given for completion callback" unless block
-            request = Request.new(block)
-            host = "http://#{Base_Uri}/tools/quickinfo.php"
-            http = EM::HttpRequest.new(host).get :query => {:show => name}, :timeout => Timeout
-            http.callback {
-              next request.fail ShowNotFound unless quick_info = Crack::XML.parse(http.response)["pre"] rescue nil
-              options[:info] = parsed_quickinfo(quick_info)
+            Request.new(Base_Uri, '/tools/quickinfo.php', block, :parse_element => 'pre', :show => name) do |request, xml|
+              options[:info] = parsed_quickinfo(xml)
               Show.new(options[:info]['showid'], options) {|show| request.succeed show }
-            }
-            http.errback { request.fail http.error }
-            request
+            end
           end
 
           def parsed_quickinfo(raw_info)
@@ -158,9 +129,10 @@ module EventMachine
         #
         # @param id [String] The show_id as per the TVRage API
         # @option options [Boolean] :greedy Whether or not to eager load the Season and Episode info
-        # @param &block [Block] Called back with the show with parsed info
+        # @param &block [Block] Called back with the show with parsed info unless fibered
         def initialize(id, options = {}, &block)
           raise RuntimeError.new("id is required") unless (@show_id = id)
+          return TVRage::Request.fibered(method(__method__), id, options) if defined? Fiber and Fiber.respond_to? :current and not block
           raise ArgumentError, "No block given for completion callback" unless block
           klass = self.class
           if options[:greedy]
@@ -184,7 +156,12 @@ module EventMachine
 
         # @param &block [Block] Called back with the list of seasons
         def season_list(&block)
-          raise ArgumentError, "No block given for successful callback" unless block
+          if defined? Fiber and Fiber.respond_to? :current and not block
+            f = Fiber.current
+            method(__method__).call {|data| f.resume(data) }
+            return Fiber.yield
+          end
+          raise ArgumentError, "No block given for completion callback" unless block
           puts "@season_list = #@season_list" if @season_list
           return block.call(@season_list) if @season_list
           self.class.episode_list(@show_id) do |episode_list|
@@ -196,14 +173,19 @@ module EventMachine
 
         # @param &block [Block] Called back with the list of episodes
         def episode_list(&block)
-          raise ArgumentError, "No block given for successful callback" unless block
+          if defined? Fiber and Fiber.respond_to? :current and not block
+            f = Fiber.current
+            method(__method__).call {|data| f.resume(data) }
+            return Fiber.yield
+          end
+          raise ArgumentError, "No block given for completion callback" unless block
           season_list do |seasons|
             block.call(seasons.collect { |season| season.episodes }.flatten)
           end
           true
         end
 
-        class ShowNotFound < RuntimeError
+        class NotFound < RuntimeError
         end
       end
     end
