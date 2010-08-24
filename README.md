@@ -1,6 +1,6 @@
 # EM-Sofa
 
-A simple fiber-aware EventMachine based Ruby library for the TVRage API (viewable [here](http://services.tvrage.com/index.php?page=public)).
+A simple fiber-aware EventMachine based Ruby library for the TVRage API (viewable [here](http://services.tvrage.com/index.php?page=public)).  
 A fork of the origional sofa library by Henry Hsu (available at [http://github.com/hsume2/sofa](http://github.com/hsume2/sofa)).
 
 ## Shows
