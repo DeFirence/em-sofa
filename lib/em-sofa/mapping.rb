@@ -1,4 +1,4 @@
-module EM::Sofa
+module EventMachine::Sofa
   module Mapping
     # This method is automatically called when {Mapping} is included in a module.
     # It automatically adds {InstanceMethods}, {ClassMethods}

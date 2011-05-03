@@ -1,7 +1,7 @@
 #require 'em-http-request'
 require 'crack'
 
-module EM::Sofa
+module EventMachine::Sofa
   module TVRage
     autoload :Schedule, 'em-sofa/tvrage/schedule'
     autoload :Show, 'em-sofa/tvrage/show'
