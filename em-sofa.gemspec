@@ -49,6 +49,7 @@ Gem::Specification.new do |s|
      "doc/top-level-namespace.html",
      "lib/em-sofa.rb",
      "lib/em-sofa/mapping.rb",
+     "lib/em-sofa/request.rb",
      "lib/em-sofa/tvrage.rb",
      "lib/em-sofa/tvrage/episode.rb",
      "lib/em-sofa/tvrage/schedule.rb",
