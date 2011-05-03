@@ -2,7 +2,7 @@ module EventMachine
   module Sofa
     module TVRage
       class Request
-        include ::EM::Deferrable
+        include ::EventMachine::Deferrable
 
         Timeout  = 15
 
@@ -21,7 +21,7 @@ module EventMachine
         def initialize(host, path, callback_block, query, &block)
           callback {|info| callback_block.call(info) }
           @parse_element, @return_element = query.delete(:parse_element) || nil, query.delete(:return_element) || nil
-          http = ::EM::HttpRequest.new("http://#{host + path}").get :query => query, :timeout => Timeout
+          http = ::EventMachine::HttpRequest.new("http://#{host + path}").get :query => query, :timeout => Timeout
           http.callback {
             xml = Crack::XML.parse(http.response) rescue nil
             next fail Show::NotFound.new(xml ? http.response : nil) if not xml or xml == {}
