@@ -3,7 +3,7 @@ require 'rake'
 
 begin
   require 'jeweler'
-  require 'lib/em-sofa/version'
+  require './lib/em-sofa/version'
   Jeweler::Tasks.new do |gem|
     gem.name = "em-sofa"
     gem.version = EventMachine::Sofa::Version::STRING

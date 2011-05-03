@@ -3,8 +3,8 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'rubygems'
 #require 'eventmachine'
 require 'bacon'
-require 'em-spec/bacon'
-require 'em-sofa'
+require './em-spec/bacon'
+require './em-sofa'
 #require 'mocha'
 
 EM.spec_backend = EventMachine::Spec::Bacon
