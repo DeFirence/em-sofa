@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{em-sofa}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["DeFirence", "Henry Hsu"]
-  s.date = %q{2010-08-20}
+  s.date = %q{2011-05-03}
   s.description = %q{A simple EventMachine based Ruby library for the TVRage API.}
   s.email = %q{defirence@defirence.za.net}
   s.extra_rdoc_files = [
